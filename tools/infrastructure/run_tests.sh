@@ -32,7 +32,29 @@
 
 # Using:
 # use the -V flag for print the test output if the test fails
-VERBOSE=$1
+VERBOSE=""
+
+print_help(){
+  echo "Usage:"
+  echo "    -V print the test output if the test fails"
+}
+
+for i in $@; do
+    case "$i" in
+    "-h" | "--help")
+        print_help
+        exit 0
+        ;;
+    "-V" )
+        VERBOSE="-V"
+        ;;
+    *)
+        echo "Fail to parse args"
+        print_help
+        exit 0
+        ;;
+    esac
+done
 
 run_test() {
     full_test_name="$1"
@@ -52,7 +74,7 @@ run_test() {
         fi
     fi
 
-    echo $test_result
+    return $test_result
 }
 
 print_test_result(){
@@ -78,7 +100,8 @@ run_all_tests() {
 
     for i in $tests; do
         echo "      Start $cur_test: ${i##*/}"
-        test_result=`run_test "$i" "$1"`
+        run_test "$i" "$1"
+        test_result=$?
         print_test_result "$i" "$cur_test" "$test_count" "$test_result"
         if [[ $test_result -ne 0 ]]; then
             failed_tests="$failed_tests\n      $test_name"
